@@ -3,3 +3,5 @@ openai
 streamlit                        
 python-dotenv                  
 groq                           
+google-api-python-client
+gcloud
