@@ -2,7 +2,7 @@ pinecone-client                   ==5.0.1
 pinecone-plugin-inference         ==1.1.0
 pinecone-plugin-interface         ==0.0.7
 openai                            ==1.59.6
-streamlit                         
+streamlit                         ==1.22.0
 grpc-gateway-protoc-gen-openapiv2 ==0.1.0
 grpcio                            ==1.68.1
 grpcio-tools                      ==1.68.1
