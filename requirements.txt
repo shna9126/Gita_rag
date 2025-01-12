@@ -5,7 +5,7 @@ streamlit
 grpc-gateway-protoc-gen-openapiv2 ==0.1.0
 grpcio                            ==1.68.1
 grpcio-tools                      ==1.68.1
-protobuf                          
+protobuf                          ==3.19.0
 python-dotenv                     ==1.0.1
 groq
 
