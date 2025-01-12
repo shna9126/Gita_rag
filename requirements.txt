@@ -5,6 +5,6 @@ streamlit
 grpc-gateway-protoc-gen-openapiv2 
 grpcio                            
 grpcio-tools                      
-protobuf                          
+protobuf==3.19.0                       
 python-dotenv                    
 groq
