@@ -9,10 +9,10 @@ from groq import Groq
 load_dotenv()
 
 # Get API keys from environment variables
-openai_api_key = os.getenv("OPENAI_API_KEY")
-pinecone_api_key = os.getenv("PINECONE_API_KEY")
-pinecone_host = os.getenv("PINECONE_HOST")
-groq_api_key = os.getenv("GROQ_API_KEY")
+openai_api_key = st.secrets["OPENAI_API_KEY"]
+pinecone_api_key = st.secrets["PINECONE_API_KEY"]
+pinecone_host = st.secrets["PINECONE_HOST"]
+groq_api_key = st.secrets["GROQ_API_KEY"]
 
 # Check if the API keys are loaded correctly
 if not openai_api_key or not pinecone_api_key or not groq_api_key:
