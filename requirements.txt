@@ -1,6 +1,5 @@
 pinecone-client                   
-pinecone-plugin-inference       
-pinecone-plugin-interface       
+pinecone-plugin-inference           
 openai                           
 streamlit                         
 grpc-gateway-protoc-gen-openapiv2 
