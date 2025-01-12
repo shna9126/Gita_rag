@@ -6,7 +6,7 @@ from pinecone.grpc import PineconeGRPC as Pinecone
 from groq import Groq
 
 # Load the .env file to get the API keys
-load_dotenv()
+#load_dotenv()
 
 # Get API keys from environment variables
 openai_api_key = st.secrets["OPENAI_API_KEY"]
