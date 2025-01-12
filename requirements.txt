@@ -1,11 +1,10 @@
 pinecone-client                   
-pinecone-plugin-inference     
-pinecone-plugin-interface        
+      
 openai                         
 streamlit                        
-grpc-gateway-protoc-gen-openapiv2 
+
 grpcio                           
 grpcio-tools                    
-protobuf                        
+                    
 python-dotenv                  
 groq                           
