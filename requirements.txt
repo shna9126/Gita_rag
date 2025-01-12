@@ -1,10 +1,5 @@
 pinecone-client                   
-      
 openai                         
 streamlit                        
-
-grpcio                           
-grpcio-tools                    
-                    
 python-dotenv                  
 groq                           
