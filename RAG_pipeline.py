@@ -14,6 +14,7 @@ pinecone_api_key = st.secrets["PINECONE_API_KEY"]
 pinecone_host = st.secrets["PINECONE_HOST"]
 groq_api_key = st.secrets["GROQ_API_KEY"]
 
+
 # Check if the API keys are loaded correctly
 if not openai_api_key or not pinecone_api_key or not groq_api_key:
     st.error("API keys are missing. Please make sure your .env file contains the correct keys.")
@@ -31,25 +32,64 @@ else:
     groq_client = Groq(api_key=groq_api_key)
 
     # Define Streamlit interface
-    st.title("Bhagvad Gita GPT created by Shivam with Rapa_learn")
-    st.sidebar.header("Search Configuration")
+    st.title("Bhagavad Gita GPT by Shivam with Rapa_learn")
+    st.sidebar.header("User Information")
+
+    # Collecting basic details from the user
+    st.sidebar.subheader("Your Details")
+    experience_level = st.sidebar.selectbox(
+        "How experienced are you with the Bhagavad Gita?",
+        ["Beginner", "Intermediate", "Advanced"]
+    )
+    purpose = st.sidebar.text_area(
+        "Why are you reading the Bhagavad Gita? (e.g., personal growth, spiritual understanding, etc.)"
+    )
+    related_experience = st.sidebar.text_area(
+        "Do you have any related experience in philosophy, spirituality, or religious texts?"
+    )
+
+    # Pre-defined prompts for user to select
+    st.sidebar.subheader("Customize Your Prompt")
+    prompt_options = {
+        "Beginner": "Explain the teachings of the Bhagavad Gita in simple language for 5th grader who is new to spirituality.",
+        "Intermediate": "Dive into the philosophical essence of the Bhagavad Gita with practical examples.",
+        "Advanced": "Provide an in-depth explanation of the Bhagavad Gita's commentary, focusing on its Vedantic perspective."
+    }
+    selected_prompt = st.sidebar.radio(
+        "Choose a pre-defined prompt:",
+        list(prompt_options.values())
+    )
+
+    # Option to enter a custom prompt
+    custom_prompt = st.sidebar.text_area(
+        "Or write your custom prompt:",
+        placeholder="Enter your own prompt if you'd like to customize further."
+    )
+
+    # Field to specify the answer style
+    st.sidebar.subheader("Answer Style")
+    answer_style = st.sidebar.selectbox(
+        "How would you like your answer to be?",
+        ["Concise", "Intermediate", "Detailed"]
+    )
 
     # Input for query
+    st.subheader("Search the Bhagavad Gita")
     query = st.text_input("Enter your search query:", "meditation")
 
     # Number of top results to retrieve
-    top_k = st.sidebar.slider("Number of top results:", 1, 10, 3)
+    top_k = st.slider("Number of top results:", 1, 10, 3)
 
     # Function to generate embedding for a query using OpenAI
     def generate_query_embedding(query):
         try:
             client = openai.OpenAI()
             response = client.embeddings.create(
-                model="text-embedding-ada-002", 
+                model="text-embedding-ada-002",
                 input=query
             )
             embedding = response.data[0].embedding
-            return embedding  
+            return embedding
         except Exception as e:
             st.error(f"Error generating embedding: {e}")
             return None
@@ -69,22 +109,33 @@ else:
             return None
 
     # Function to generate response using Groq API (Llama-based model)
-    def generate_response_groq(context, query):
+    def generate_response_groq(context, prompt, query, answer_style, user_details):
         """Generate a response using the Groq API with a Llama-based model."""
         try:
-            prompt = (
-                f"You are an expert in Vedic sciences especially on Ramanuja Gita Bhashya. "
-                f"Answer the query in detail and accurately so that anybody can understand.\n\n"
-                f"Context:\n{context}\n\n"
-                f"Query:\n{query}\n\nAnswer:"
+            # Add user details to the prompt
+            user_context = (
+                f"User Details:\n"
+                f"- Experience Level: {user_details['experience_level']}\n"
+                f"- Purpose: {user_details['purpose']}\n"
+                f"- Related Experience: {user_details['related_experience']}\n\n"
             )
+        
+            # Final prompt combining user context, system prompt, and query
+            final_prompt = (
+                f"{user_context}{prompt}\n\n"
+                f"Context:\n{context}\n\n"
+                f"Query:\n{query}\n\n"
+                f"Answer style: {answer_style}\nAnswer:"
+            )
+
+            # Call the LLM with the updated prompt
             response = groq_client.chat.completions.create(
-                model="llama-3.3-70b-versatile",  
+                model="llama-3.3-70b-versatile",
                 messages=[
                     {"role": "system", "content": "You are an expert in the topic based on the context provided."},
-                    {"role": "user", "content": prompt}
+                    {"role": "user", "content": final_prompt}
                 ]
-            )
+         )
             return response.choices[0].message.content
         except Exception as e:
             st.error(f"Error generating response with Groq: {e}")
@@ -114,25 +165,31 @@ else:
             st.info("No matches found.")
             return None
 
-
-
     # Main action
-    if st.button("Search"):
-        if query.strip():
-            st.info("Generating embedding...")
-            embedding = generate_query_embedding(query)
+if st.button("Search"):
+    if query.strip():
+        st.info("Generating embedding...")
+        embedding = generate_query_embedding(query)
 
-            if embedding:
-                st.info("Querying Pinecone index...")
-                response = query_pinecone_index(embedding, index, top_k)
+        if embedding:
+            st.info("Querying Pinecone index...")
+            response = query_pinecone_index(embedding, index, top_k)
 
-                if response:
-                    st.info("Generating response using Groq...")
-                    context = display_human_readable_results(response)
-                    if context:
-                        generated_response = generate_response_groq(context, query)
-                        if generated_response:
-                            st.subheader("Generated Response:")
-                            st.write(generated_response)
-        else:
-            st.warning("Please enter a search query.")
+            if response:
+                st.info("Generating response using Groq...")
+                context = display_human_readable_results(response)
+                if context:
+                    # Use custom prompt if provided, otherwise use the selected pre-defined prompt
+                    final_prompt = custom_prompt if custom_prompt.strip() else selected_prompt
+                    # Prepare user details dictionary
+                    user_details = {
+                        "experience_level": experience_level,
+                        "purpose": purpose,
+                        "related_experience": related_experience,
+                    }
+                    generated_response = generate_response_groq(context, final_prompt, query, answer_style, user_details)
+                    if generated_response:
+                        st.subheader("Generated Response:")
+                        st.write(generated_response)
+    else:
+        st.warning("Please enter a search query.")
